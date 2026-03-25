@@ -10,19 +10,21 @@ from telegram_mcp.client import ChatInfo, MessageInfo, TelegramClient
 
 API_ID = os.getenv("TELEGRAM_API_ID")
 API_HASH = os.getenv("TELEGRAM_API_HASH")
-HAS_CREDENTIALS = API_ID is not None and API_HASH is not None
+SESSION_STRING = os.getenv("TELEGRAM_SESSION")
+HAS_CREDENTIALS = API_ID is not None and API_HASH is not None and SESSION_STRING is not None
 
 
-@pytest.mark.skipif(not HAS_CREDENTIALS, reason="TELEGRAM_API_ID and TELEGRAM_API_HASH not set")
+@pytest.mark.skipif(
+    not HAS_CREDENTIALS,
+    reason="TELEGRAM_API_ID, TELEGRAM_API_HASH and TELEGRAM_SESSION not set",
+)
 class TestTelegramClientIntegration:
-    """Integration tests with real Telegram API."""
-
     @pytest.fixture
     async def client(self) -> TelegramClient:
         client = TelegramClient(
             api_id=int(API_ID),  # type: ignore[arg-type]
             api_hash=API_HASH,  # type: ignore[arg-type]
-            session_name="test_session",
+            session_string=SESSION_STRING,
         )
         yield client
         if client.is_connected:
@@ -67,8 +69,6 @@ class TestTelegramClientIntegration:
 
 
 class TestDataclasses:
-    """Tests for dataclasses without API calls."""
-
     def test_chat_info(self) -> None:
         chat = ChatInfo(id=123, title="Test", username="test", chat_type="private")
         assert chat.id == 123

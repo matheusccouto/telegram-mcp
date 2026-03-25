@@ -28,6 +28,7 @@ async def _get_client() -> TelegramClient:
         _client = TelegramClient(
             api_id=int(os.environ["TELEGRAM_API_ID"]),
             api_hash=os.environ["TELEGRAM_API_HASH"],
+            session_string=os.environ.get("TELEGRAM_SESSION"),
         )
     if not _client.is_connected:
         await _client.connect()

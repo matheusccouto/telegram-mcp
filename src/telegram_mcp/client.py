@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from hydrogram import Client
@@ -11,14 +10,11 @@ from hydrogram import Client
 if TYPE_CHECKING:
     from hydrogram.types import Message
 
-SESSION_DIR = Path.home() / ".telegram"
 TEXT_PREVIEW_LENGTH = 100
 
 
 @dataclass
 class ChatInfo:
-    """Information about a chat."""
-
     id: int
     title: str
     username: str | None
@@ -27,8 +23,6 @@ class ChatInfo:
 
 @dataclass
 class MessageInfo:
-    """Information about a message."""
-
     id: int
     chat_id: int
     text: str | None
@@ -38,17 +32,15 @@ class MessageInfo:
 
 
 class TelegramClient:
-    """Telegram client using Hydrogram for MTProto communication."""
-
     def __init__(
         self,
         api_id: int,
         api_hash: str,
-        session_name: str = "telegram_mcp",
+        session_string: str | None = None,
     ) -> None:
         self.api_id = api_id
         self.api_hash = api_hash
-        self.session_name = session_name
+        self.session_string = session_string
         self._client: Client | None = None
         self._connected = False
 
@@ -60,13 +52,12 @@ class TelegramClient:
         if self.is_connected:
             return True
 
-        SESSION_DIR.mkdir(parents=True, exist_ok=True)
-
         self._client = Client(
-            name=self.session_name,
+            name="telegram_mcp",
             api_id=self.api_id,
             api_hash=self.api_hash,
-            workdir=str(SESSION_DIR),
+            session_string=self.session_string,
+            in_memory=True,
         )
 
         await self._client.start()
@@ -149,7 +140,11 @@ def get_client() -> TelegramClient:
     return _client
 
 
-def init_client(api_id: int, api_hash: str, session_name: str = "telegram_mcp") -> TelegramClient:
+def init_client(
+    api_id: int,
+    api_hash: str,
+    session_string: str | None = None,
+) -> TelegramClient:
     global _client  # noqa: PLW0603
-    _client = TelegramClient(api_id=api_id, api_hash=api_hash, session_name=session_name)
+    _client = TelegramClient(api_id=api_id, api_hash=api_hash, session_string=session_string)
     return _client

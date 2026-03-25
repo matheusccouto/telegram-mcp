@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -62,40 +61,21 @@ class TelegramClient:
             return True
 
         SESSION_DIR.mkdir(parents=True, exist_ok=True)
-        session_path = SESSION_DIR / self.session_name
 
         self._client = Client(
-            name=str(session_path),
+            name=self.session_name,
             api_id=self.api_id,
             api_hash=self.api_hash,
             workdir=str(SESSION_DIR),
         )
 
-        await self._client.connect()
+        await self._client.start()
         self._connected = True
-
-        if not await self._client.is_user_authorized():
-            await self._authenticate()
-
         return True
-
-    async def _authenticate(self) -> None:
-        phone = input("Enter your phone number (with country code, e.g., +5511999999999): ")  # noqa: ASYNC250
-
-        sent_code = await self._client.send_code(phone)
-
-        print("\nA verification code has been sent to your Telegram app.")  # noqa: T201
-        print("Check your Telegram app for the code.")  # noqa: T201
-
-        webbrowser.open(f"https://my.telegram.org/auth?phone={phone}")
-
-        code = input("\nEnter the verification code: ")  # noqa: ASYNC250
-
-        await self._client.sign_in(phone, sent_code.phone_code_hash, code)
 
     async def disconnect(self) -> None:
         if self._client:
-            await self._client.disconnect()
+            await self._client.stop()
             self._connected = False
 
     async def send_message(self, chat_id: int | str, text: str) -> MessageInfo:

@@ -11,7 +11,7 @@ from hydrogram import Client
 if TYPE_CHECKING:
     from hydrogram.types import Message
 
-SESSION_DIR = Path.home() / ".telegram-mcp"
+SESSION_DIR = Path.home() / ".telegram"
 TEXT_PREVIEW_LENGTH = 100
 
 
